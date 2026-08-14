@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module gargantua_telemetry;
 
     // ==========================================
@@ -10,13 +12,15 @@ module gargantua_telemetry;
 
     // TODO: Declare an associative array named 'telemetry_map'.
     // It should store 'quantum_packet_s' types and be indexed by an 'int' (the frequency).
-    
+    quantum_packet_s telemetry_map[int];
 
     // ==========================================
     // 2. DATA INGESTION
     // ==========================================
     task receive_packet(int freq, int res, int cor);
         // TODO: Store the resonance and corruption into the associative array at index 'freq'.
+        telemetry_map[freq].resonance  = res;
+        telemetry_map[freq].corruption = cor;
         
         $display("[TARS] Packet received on Freq: %0h | Res: %0d | Cor: %0d", freq, res, cor);
     endtask
@@ -30,7 +34,11 @@ module gargantua_telemetry;
         // TODO: Iterate through the associative array.
         // If the corruption is >= 9000, delete that entry from the array.
         // Hint: You can use a foreach loop: foreach(telemetry_map[freq])
-        
+        foreach (telemetry_map[freq]) begin
+            if (telemetry_map[freq].corruption >= 9000) begin
+                telemetry_map.delete(freq);
+            end
+        end
         
         $display("[TARS] Purge complete. Remaining valid packets: %0d", telemetry_map.num());
     endtask
@@ -50,7 +58,12 @@ module gargantua_telemetry;
         
         // TODO: Iterate through the remaining data in the associative array.
         // Find the packet with the highest resonance. Save its resonance and frequency.
-        
+        foreach (telemetry_map[freq]) begin
+            if (telemetry_map[freq].resonance > max_res) begin
+                max_res = telemetry_map[freq].resonance;
+                best_freq = freq;
+            end
+        end
         
         $display("==================================================");
         $display("   GRAVITY EQUATION SOLVED! ");
