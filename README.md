@@ -38,7 +38,10 @@ This documentation provides an overview of the verification architectures, data 
 [SECURE] Valid Command Received: PATROL
 [HACKER ALERT] Invalid raw code 8'h99 injected! Blocking attack...
 [SECURE] Safety Protocol Triggered: Forced state to RTL
-```text
+```
+
+---
+
 # 🖥️ Lab 02: The Terminal Parser
 
 ## 📌 Overview & Target Concepts
