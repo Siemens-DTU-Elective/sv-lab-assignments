@@ -1,5 +1,4 @@
 module gargantua_telemetry;
-
     // ==========================================
     // 1. DATA STRUCTURES
     // ==========================================
@@ -8,33 +7,41 @@ module gargantua_telemetry;
         int corruption;
     } quantum_packet_s;
 
-    // TODO: Declare an associative array named 'telemetry_map'.
-    // It should store 'quantum_packet_s' types and be indexed by an 'int' (the frequency).
-    
+    // Associative array: quantum_packet_s values, indexed by int (frequency)
+    quantum_packet_s telemetry_map [int];
 
     // ==========================================
     // 2. DATA INGESTION
     // ==========================================
     task receive_packet(int freq, int res, int cor);
-        // TODO: Store the resonance and corruption into the associative array at index 'freq'.
-        
+        // Store the resonance and corruption into the associative array at index 'freq'.
+        telemetry_map[freq].resonance  = res;
+        telemetry_map[freq].corruption = cor;
+
         $display("[TARS] Packet received on Freq: %0h | Res: %0d | Cor: %0d", freq, res, cor);
     endtask
-
     // ==========================================
     // 3. DATA PURGE (SAFE DELETION)
     // ==========================================
     task purge_corrupted_data();
+        int keys_to_delete[$]; // never delete from an assoc. array while foreach-ing it!
+
         $display("\n[TARS] Initiating Radiation Purge...");
-        
-        // TODO: Iterate through the associative array.
-        // If the corruption is >= 9000, delete that entry from the array.
-        // Hint: You can use a foreach loop: foreach(telemetry_map[freq])
-        
-        
+
+        // Pass 1: just LOOK -- collect the keys that need to go.
+        foreach (telemetry_map[freq]) begin
+            if (telemetry_map[freq].corruption >= 9000) begin
+                keys_to_delete.push_back(freq);
+            end
+        end
+
+        // Pass 2: now it's safe to actually delete them.
+        foreach (keys_to_delete[i]) begin
+            telemetry_map.delete(keys_to_delete[i]);
+        end
+
         $display("[TARS] Purge complete. Remaining valid packets: %0d", telemetry_map.num());
     endtask
-
     // ==========================================
     // 4. THE GRAVITY EQUATION
     // ==========================================
@@ -48,9 +55,13 @@ module gargantua_telemetry;
         
         $display("\n[TARS] Calculating Gravity Equation...");
         
-        // TODO: Iterate through the remaining data in the associative array.
-        // Find the packet with the highest resonance. Save its resonance and frequency.
-        
+        // Iterate through the remaining data; keep the highest resonance seen.
+        foreach (telemetry_map[freq]) begin
+            if (telemetry_map[freq].resonance > max_res) begin
+                max_res   = telemetry_map[freq].resonance;
+                best_freq = freq;
+            end
+        end
         
         $display("==================================================");
         $display("   GRAVITY EQUATION SOLVED! ");
@@ -58,7 +69,6 @@ module gargantua_telemetry;
         $display("   Maximum Resonance: %0d", max_res);
         $display("==================================================");
     endtask
-
     // ==========================================
     // TESTBENCH
     // ==========================================
@@ -79,5 +89,4 @@ module gargantua_telemetry;
         
         $display("\n--- SYSTEM SHUTDOWN ---");
     end
-
 endmodule
